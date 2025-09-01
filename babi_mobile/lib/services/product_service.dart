@@ -125,7 +125,7 @@ class ProductService {
 
     http.Response res;
     try {
-      res = await http.delete(Uri.parse('$_base/products/$idStr'), headers: {
+      res = await http.delete(Uri.parse('$_base/api/products/$idStr'), headers: {
         'Accept': 'application/json',
         if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
       });

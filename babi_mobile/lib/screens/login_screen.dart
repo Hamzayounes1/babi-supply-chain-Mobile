@@ -126,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: const [
-                              Text('Inventory App', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              Text('Babi-Chain', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                               SizedBox(height: 2),
                               Text('Sign in to continue', style: TextStyle(fontSize: 13, color: Colors.grey)),
                             ],
@@ -246,7 +246,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           children: [
                             const Text('Powered by', style: TextStyle(color: Colors.grey, fontSize: 12)),
                             const SizedBox(width: 6),
-                            Text('Your Company', style: TextStyle(color: Colors.blue.shade700, fontSize: 12, fontWeight: FontWeight.bold)),
+                            Text('Hamza-Younes', style: TextStyle(color: Colors.blue.shade700, fontSize: 12, fontWeight: FontWeight.bold)),
                           ],
                         ),
                       ),

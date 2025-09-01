@@ -1,17 +1,9 @@
-// lib/screens/register_screen.dart
-//
-// RegisterScreen for Flutter 4 using Provider + AuthProvider (lib/providers/auth_provider.dart)
-// - Validates name, email, password, password confirmation
-// - Submits to AuthProvider.register(...) which should return a Map with a 'status' key
-// - Handles Laravel-style 422 validation errors (errors: { field: [msgs] }) and displays first error per field
-// - On success navigates to '/home' or calls optional onRegistered callback
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
-  final VoidCallback? onRegistered; // optional callback to run after successful registration
+  final VoidCallback? onRegistered;
   const RegisterScreen({super.key, this.onRegistered});
 
   @override
@@ -28,6 +20,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _submitting = false;
   Map<String, String?> _fieldErrors = {};
   String? _generalError;
+
+  final Color accentColor = Colors.indigo.shade600;
 
   @override
   void dispose() {
@@ -72,7 +66,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
 
       if (res['status'] == 'validation_error') {
-        // Map Laravel-style errors: { field: [ "msg1", "msg2" ] }
         final errors = <String, String?>{};
         final raw = res['errors'] as Map? ?? {};
         raw.forEach((k, v) {
@@ -88,7 +81,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         return;
       }
 
-      // general error fallback
       setState(() {
         _generalError = res['message']?.toString() ?? 'Registration failed';
       });
@@ -103,16 +95,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Register')),
+      backgroundColor: const Color(0xFFF5F7FA),
+      appBar: AppBar(
+        title: const Text('Register', style: TextStyle(color: Colors.black87)),
+        backgroundColor: Colors.white,
+        centerTitle: true,
+        elevation: 0,
+      ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520),
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16),
             child: Card(
               elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: Padding(
-                padding: const EdgeInsets.all(18.0),
+                padding: const EdgeInsets.all(18),
                 child: Form(
                   key: _formKey,
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -120,70 +119,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       Text(_generalError!, style: const TextStyle(color: Colors.red)),
                       const SizedBox(height: 12),
                     ],
-                    TextFormField(
-                      controller: _nameC,
-                      decoration: InputDecoration(
-                        labelText: 'Full name',
-                        hintText: 'John Doe',
-                        errorText: _fieldErrors['name'],
-                      ),
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'Name is required';
-                        return null;
-                      },
-                    ),
+                    _buildTextField(_nameC, 'Full name', hint: 'John Doe', error: _fieldErrors['name']),
                     const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _emailC,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(
-                        labelText: 'Email',
-                        hintText: 'you@example.com',
-                        errorText: _fieldErrors['email'],
-                      ),
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'Email is required';
-                        final regex = RegExp(r'.+@.+\..+');
-                        if (!regex.hasMatch(v.trim())) return 'Enter a valid email';
-                        return null;
-                      },
-                    ),
+                    _buildTextField(_emailC, 'Email', hint: 'you@example.com', error: _fieldErrors['email'], keyboard: TextInputType.emailAddress),
                     const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _passC,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        errorText: _fieldErrors['password'],
-                      ),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return 'Password is required';
-                        if (v.length < 6) return 'Password must be at least 6 characters';
-                        return null;
-                      },
-                    ),
+                    _buildTextField(_passC, 'Password', error: _fieldErrors['password'], obscure: true),
                     const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _pass2C,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: 'Confirm password',
-                        errorText: _fieldErrors['password_confirmation'],
-                      ),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return 'Confirm your password';
-                        if (v != _passC.text) return 'Passwords do not match';
-                        return null;
-                      },
-                    ),
+                    _buildTextField(_pass2C, 'Confirm password', error: _fieldErrors['password_confirmation'], obscure: true),
                     const SizedBox(height: 18),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: accentColor,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
                         onPressed: _submitting ? null : _submit,
                         child: _submitting
                             ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                            : const Text('Create account'),
+                            : const Text('Create account', style: TextStyle(fontSize: 16)),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -203,6 +158,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label,
+      {String? hint, String? error, bool obscure = false, TextInputType keyboard = TextInputType.text}) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscure,
+      keyboardType: keyboard,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        errorText: error,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      validator: (v) {
+        if (v == null || v.trim().isEmpty) return '$label is required';
+        if (label == 'Email') {
+          final regex = RegExp(r'.+@.+\..+');
+          if (!regex.hasMatch(v.trim())) return 'Enter a valid email';
+        }
+        if (label == 'Password' && v.length < 6) return 'Password must be at least 6 characters';
+        if (label == 'Confirm password' && v != _passC.text) return 'Passwords do not match';
+        return null;
+      },
     );
   }
 }
